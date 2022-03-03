@@ -71,7 +71,6 @@ func (prj project) getAllMergeRequests() ([]*gitlab.MergeRequest, error) {
 }
 
 func (prj project) addLabelToMergeRequests(label *gitlab.Label) {
-
 	mergeRequests, err := prj.getAllMergeRequests()
 	if err != nil {
 		fmt.Println(err.Error())
@@ -81,7 +80,7 @@ func (prj project) addLabelToMergeRequests(label *gitlab.Label) {
 			fmt.Println(mr.Title)
 			fmt.Println(mr.IID)
 			mr.Labels = append(mr.Labels, label.Name)
-			prj.gitlabClient.MergeRequests.UpdateMergeRequest(prj.projectID, mr.IID, &gitlab.UpdateMergeRequestOptions{AddLabels: mr.Labels})
+			prj.gitlabClient.MergeRequests.UpdateMergeRequest(prj.projectID, mr.IID, &gitlab.UpdateMergeRequestOptions{AddLabels: &mr.Labels})
 			fmt.Println(mr.Labels)
 			fmt.Println("---------------------------------------------")
 
@@ -89,22 +88,49 @@ func (prj project) addLabelToMergeRequests(label *gitlab.Label) {
 	}
 }
 
-func (prj project) removeLabelToMergeRequests(label *gitlab.Label) {
-	mergeRequests, err := prj.getAllMergeRequests()
-	if err != nil {
-		fmt.Println(err.Error())
+// func (prj project) removeLabelToMergeRequests(label *gitlab.Label) {
+// 	mergeRequests, err := prj.getAllMergeRequests()
+// 	if err != nil {
+// 		fmt.Println(err.Error())
+// 	} else {
+// 		for _, mr := range mergeRequests {
+
+// 			fmt.Println(mr.Title)
+// 			fmt.Println(mr.IID)
+// 			fmt.Println(mr.Labels)
+// 			var labels []string = nil
+// 			labels = append(labels, label.Name)
+// 			prj.gitlabClient.MergeRequests.UpdateMergeRequest(prj.projectID, mr.IID, &gitlab.UpdateMergeRequestOptions{RemoveLabels: labels})
+// 			fmt.Println("---------------------------------------------")
+
+// 		}
+// 	}
+// }
+
+func (prj project) getDependencyInformation() {
+
+	dependencyFile, _, branchErr := prj.gitlabClient.RepositoryFiles.GetRawFile(prj.projectID, "Dependencies.dep", &gitlab.GetRawFileOptions{Ref: gitlab.String("REL-3.4.0")})
+	if branchErr != nil {
+		log.Fatalf("Failed to get project: %v", branchErr)
 	} else {
-		for _, mr := range mergeRequests {
-
-			fmt.Println(mr.Title)
-			fmt.Println(mr.IID)
-			fmt.Println(mr.Labels)
-			var labels []string = nil
-			labels = append(labels, label.Name)
-			prj.gitlabClient.MergeRequests.UpdateMergeRequest(prj.projectID, mr.IID, &gitlab.UpdateMergeRequestOptions{RemoveLabels: labels})
-			fmt.Println("---------------------------------------------")
-
+		// open output file
+		fo, err := os.Create("Dependency.txt")
+		if err != nil {
+			panic(err)
 		}
+		// close fo on exit and check for its returned error
+		defer func() {
+			if err := fo.Close(); err != nil {
+				panic(err)
+			}
+		}()
+		// write
+		if _, err := fo.Write(dependencyFile); err != nil {
+			panic(err)
+		} else {
+			fmt.Println("Dependency.txt is created")
+		}
+
 	}
 
 }
