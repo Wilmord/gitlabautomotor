@@ -16,7 +16,7 @@ type project struct {
 	gitlabClient  *gitlab.Client
 }
 
-//Constructor
+// Constructor
 func newProject(id int, url string) *project {
 
 	gitlabToken := os.Getenv("GITLAB_TOKEN")
@@ -107,9 +107,9 @@ func (prj project) addLabelToMergeRequests(label *gitlab.Label) {
 // 	}
 // }
 
-func (prj project) getDependencyInformation() {
-
-	dependencyFile, _, branchErr := prj.gitlabClient.RepositoryFiles.GetRawFile(prj.projectID, "Dependencies.dep", &gitlab.GetRawFileOptions{Ref: gitlab.String("REL-3.4.0")})
+// TODO: Take version as parameter from command line
+func (prj project) getDependencyInformation(relNmbr string) {
+	dependencyFile, _, branchErr := prj.gitlabClient.RepositoryFiles.GetRawFile(prj.projectID, "Dependencies.dep", &gitlab.GetRawFileOptions{Ref: gitlab.String(relNmbr)})
 	if branchErr != nil {
 		log.Fatalf("Failed to get project: %v", branchErr)
 	} else {
