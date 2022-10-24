@@ -107,7 +107,6 @@ func (prj project) addLabelToMergeRequests(label *gitlab.Label) {
 // 	}
 // }
 
-// TODO: Take version as parameter from command line
 func (prj project) getDependencyInformation(relNmbr string) {
 	dependencyFile, _, branchErr := prj.gitlabClient.RepositoryFiles.GetRawFile(prj.projectID, "Dependencies.dep", &gitlab.GetRawFileOptions{Ref: gitlab.String(relNmbr)})
 	if branchErr != nil {
